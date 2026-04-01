@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preview-container img,
+        .preview-container video {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .result-item.unknown {
+            border-left-color: #ff6b6b;
+        }
+
+        .result-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .result-confidence {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .status {
+            padding: 15px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .people-list {
+            list-style: none;
+        }
+
+        .people-item {
+            padding: 15px;
+            background: #f5f5f5;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .people-item-info {
+            flex: 1;
+        }
+
+        .people-item-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .people-item-count {
+            font-size: 0.9em;
+            color: #667eea;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            width: auto;
+        }
+
+        .delete-btn:hover {
+            background: #ff5252;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .grid-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .nav-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Face Recognition System</h1>
+            <p>Upload photos, train the system, and recognize faces instantly</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="switchTab('add-faces')">➕ Add Faces</button>
+            <button class="nav-btn" onclick="switchTab('recognize')">🔍 Recognize</button>
+            <button class="nav-btn" onclick="switchTab('live')">🎥 Live Detection</button>
+            <button class="nav-btn" onclick="switchTab('people')">👥 People</button>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="card active">
+                <h2>Dashboard</h2>
+                <p>Welcome to the Face Recognition System! Here you can manage your face database and recognize faces.</p>
+                
+                <div id="status-info" class="status">
+                    <div>System Status: <strong>Loading...</strong></div>
+                    <div>Known Faces: <strong id="face-count">0</strong></div>
+                </div>
+
+                <h3 style="color: #667eea; margin: 20px 0 15px 0;">Quick Actions</h3>
+                <button onclick="switchTab('add-faces')">Add New Faces</button>
+                <button class="btn-secondary" onclick="trainSystem()">Train System</button>
+                <button class="btn-secondary" onclick="switchTab('recognize')">Recognize Photo</button>
+            </div>
+
+            <!-- Add Faces Tab -->
+            <div id="add-faces" class="card">
+                <h2>Add Faces</h2>
+                
+                <div class="form-group">
+                    <label for="person-name">Person Name:</label>
+                    <input type="text" id="person-name" placeholder="e.g., John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="face-image">Select Photo:</label>
+                    <input type="file" id="face-image" accept="image/*">
+                </div>
+
+                <div id="add-preview" class="preview-container"></div>
+
+                <button onclick="uploadFace()">Upload Face</button>
+                <div id="upload-status"></div>
+
+                <h3 style="color: #667eea; margin: 30px 0 15px 0;">Captured Faces</h3>
+                <div id="captured-faces" class="results"></div>
+            </div>
+
+            <!-- Recognize Tab -->
+            <div id="recognize" class="card">
+                <h2>Recognize Faces</h2>
+                <p>Upload a photo to recognize faces in it.</p>
+
+                <div class="form-group">
+                    <label for="recognize-image">Select Photo:</label>
+                    <input type="file" id="recognize-image" accept="image/*">
+                </div>
+
+                <div id="recognize-preview" class="preview-container"></div>
+
+                <button onclick="recognizeFaces()">Recognize</button>
+                <div id="recognize-status"></div>
+
+                <div id="recognition-results" class="results"></div>
+            </div>
+
+            <!-- Live Detection Tab -->
+            <div id="live" class="card grid-full">
+                <h2>Live Face Detection</h2>
+                <p>Real-time face detection using your webcam</p>
+                
+                <div style="margin: 20px 0;">
+                    <button onclick="startLiveDetection()" id="start-live-btn">🎥 Start Webcam</button>
+                    <button onclick="stopLiveDetection()" id="stop-live-btn" style="display: none; background: #ff6b6b;">⏹ Stop Webcam</button>
+                    <button onclick="captureLiveFace()" id="capture-live-btn" style="display: none; background: #4CAF50; margin-left: 10px;">📸 Capture Face</button>
+                </div>
+
+                <!-- Detected Names Display -->
+                <div id="detected-names-panel" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin: 15px 0; text-align: center;">
+                    <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 10px;">🎯 DETECTED PERSONS</div>
+                    <div id="detected-names-list" style="font-size: 1.8em; font-weight: bold; min-height: 50px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px;"></div>
+                    <div id="detected-count" style="font-size: 0.9em; margin-top: 10px; opacity: 0.9;"></div>
+                </div>
+
+                <div id="live-preview" style="position: relative; margin: 20px 0; text-align: center;">
+                    <video id="webcam" style="max-width: 100%; border-radius: 8px; display: none; max-height: 500px; background: #000;" autoplay playsinline></video>
+                    <canvas id="canvas-overlay" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: none; border-radius: 8px;"></canvas>
+                    <canvas id="canvas-capture" style="display: none;"></canvas>
+                    <div id="live-status" style="padding: 10px; text-align: center; color: #666;">Click "Start Webcam" to begin</div>
+                </div>
+
+                <div id="capture-form" style="display: none; border: 2px solid #667eea; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Save Captured Face</h3>
+                    <div class="form-group">
+                        <label for="capture-person-name">Person Name:</label>
+                        <input type="text" id="capture-person-name" placeholder="e.g., John Doe">
+                    </div>
+                    <div id="capture-preview" style="margin: 15px 0; text-align: center;"></div>
+                    <button onclick="saveCapturedFace()">✅ Save Face</button>
+                    <button class="btn-secondary" onclick="cancelCapture()">❌ Cancel</button>
+                </div>
+
+                <div id="live-results" class="results" style="margin-top: 20px;">
+                    <p style="color: #999; text-align: center;">Detection results will appear here</p>
+                </div>
+            </div>
+
+            <!-- People Tab -->
+            <div id="people" class="card grid-full">
+                <h2>Manage People</h2>
+                
+                <button class="btn-secondary" onclick="loadPeople()">Refresh List</button>
+                
+                <ul id="people-list" class="people-list" style="margin-top: 20px;"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => card.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected card
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active to clicked button
+            event.target.classList.add('active');
+            
+            // Load data if needed
+            if (tabName === 'people') {
+                loadPeople();
+            }
+        }
+
+        // Get system status
+        async function getStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                document.getElementById('face-count').textContent = data.known_faces_count;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Upload face
+        async function uploadFace() {
+            const personName = document.getElementById('person-name').value.trim();
+            const fileInput = document.getElementById('face-image');
+            
+            if (!personName) {
+                showStatus('upload-status', 'Please enter a person name', 'error');
+                return;
+            }
+            
+            if (!fileInput.files.length) {
+                showStatus('upload-status', 'Please select an image', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('person_name', personName);
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                showStatus('upload-status', 'Uploading...', 'success');
+                const response = await fetch('/api/upload-face', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('upload-status', `✅ Face uploaded for ${personName}!`, 'success');
+                    fileInput.value = '';
+                    document.getElementById('add-preview').innerHTML = '';
+                    document.getElementById('person-name').value = '';
+                    loadCapturedFaces();
+                } else {
+                    showStatus('upload-status', `❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('upload-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Recognize faces
+        async function recognizeFaces() {
+            const fileInput = document.getElementById('recognize-image');
+            
+            if (!fileInput.files.length) {
+                showStatus('recognize-status', 'Please select an image', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                showStatus('recognize-status', 'Analyzing...', 'success');
+                const response = await fetch('/api/recognize-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data.results, data.faces_found);
+                    showStatus('recognize-status', `✅ Found ${data.faces_found} face(s)!`, 'success');
+                } else {
+                    showStatus('recognize-status', `❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('recognize-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Train system
+        async function trainSystem() {
+            try {
+                showStatus('upload-status', 'Training system...', 'success');
+                const response = await fetch('/api/train', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('upload-status', '✅ System trained successfully!', 'success');
+                    getStatus();
+                } else {
+                    showStatus('upload-status', `❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('upload-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Load people list
+        async function loadPeople() {
+            try {
+                const response = await fetch('/api/get-people');
+                const data = await response.json();
+                
+                const list = document.getElementById('people-list');
+                list.innerHTML = '';
+                
+                if (data.people.length === 0) {
+                    list.innerHTML = '<li><p style="color: #999;">No people added yet</p></li>';
+                    return;
+                }
+                
+                data.people.forEach(person => {
+                    const item = document.createElement('li');
+                    item.className = 'people-item';
+                    item.innerHTML = `
+                        <div class="people-item-info">
+                            <div class="people-item-name">${person.name}</div>
+                            <div class="people-item-count">${person.face_count} photo(s)</div>
+                        </div>
+                        <button class="delete-btn" onclick="deletePerson('${person.name}')">Delete</button>
+                    `;
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Delete person
+        async function deletePerson(personName) {
+            if (!confirm(`Delete ${personName}?`)) return;
+            
+            try {
+                const response = await fetch(`/api/delete-person/${personName}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadPeople();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Load captured faces
+        async function loadCapturedFaces() {
+            const container = document.getElementById('captured-faces');
+            container.innerHTML = '<div class="loading"></div>';
+            
+            try {
+                const response = await fetch('/api/get-people');
+                const data = await response.json();
+                
+                container.innerHTML = '';
+                
+                data.people.forEach(person => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.innerHTML = `
+                        <div class="result-name">${person.name}</div>
+                        <div class="result-confidence">${person.face_count} photo(s) captured</div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                container.innerHTML = '<p style="color: #999;">Error loading faces</p>';
+            }
+        }
+
+        // Display recognition results
+        function displayResults(results, count) {
+            const container = document.getElementById('recognition-results');
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = result.name === 'Unknown' ? 'result-item unknown' : 'result-item';
+                div.innerHTML = `
+                    <div class="result-name">${result.name}</div>
+                    <div class="result-confidence">Confidence: ${result.confidence}%</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Show status message
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${type}`;
+            element.textContent = message;
+        }
+
+        // File preview
+        document.getElementById('face-image')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('add-preview').innerHTML = `<img src="${event.target.result}" style="max-width: 200px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('recognize-image')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('recognize-preview').innerHTML = `<img src="${event.target.result}" style="max-width: 100%;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Live detection variables
+        let liveStream = null;
+        let liveDetectionInterval = null;
+        let isLiveDetecting = false;
+        let capturedImageData = null;
+
+        // Capture current frame
+        function captureLiveFace() {
+            const canvas = document.getElementById('canvas-capture');
+            const video = document.getElementById('webcam');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            capturedImageData = canvas.toDataURL('image/jpeg', 0.9);
+            
+            // Show preview and form
+            document.getElementById('capture-form').style.display = 'block';
+            document.getElementById('capture-preview').innerHTML = `<img src="${capturedImageData}" style="max-width: 200px; border-radius: 8px;">`;
+            document.getElementById('capture-person-name').value = '';
+            document.getElementById('capture-person-name').focus();
+        }
+
+        // Save captured face
+        async function saveCapturedFace() {
+            const personName = document.getElementById('capture-person-name').value.trim();
+            
+            if (!personName) {
+                alert('Please enter a person name');
+                return;
+            }
+            
+            if (!capturedImageData) {
+                alert('No captured image');
+                return;
+            }
+            
+            try {
+                // Convert base64 to blob
+                const base64 = capturedImageData.split(',')[1];
+                const binaryString = atob(base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const blob = new Blob([bytes], { type: 'image/jpeg' });
+                
+                // Create FormData
+                const formData = new FormData();
+                formData.append('person_name', personName);
+                formData.append('file', blob, 'captured_face.jpg');
+                
+                // Upload
+                const uploadResponse = await fetch('/api/upload-face', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (uploadResponse.ok) {
+                    alert(`✅ Face saved for ${personName}!`);
+                    cancelCapture();
+                    // Refresh captured faces
+                    if (document.getElementById('add-faces').classList.contains('active')) {
+                        loadCapturedFaces();
+                    }
+                } else {
+                    const data = await uploadResponse.json();
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Cancel capture
+        function cancelCapture() {
+            document.getElementById('capture-form').style.display = 'none';
+            document.getElementById('capture-preview').innerHTML = '';
+            document.getElementById('capture-person-name').value = '';
+            capturedImageData = null;
+        }
+
+        // Start live detection
+        async function startLiveDetection() {
+            try {
+                const video = document.getElementById('webcam');
+                const canvas = document.getElementById('canvas-overlay');
+                
+                // Request camera access
+                liveStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+                
+                video.srcObject = liveStream;
+                video.style.display = 'block';
+                canvas.style.display = 'block';
+                
+                document.getElementById('start-live-btn').style.display = 'none';
+                document.getElementById('stop-live-btn').style.display = 'block';
+                document.getElementById('capture-live-btn').style.display = 'block';
+                document.getElementById('live-status').textContent = '🎯 Live detection running...';
+                
+                isLiveDetecting = true;
+                
+                // Wait for video to load
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    performLiveDetection(video, canvas);
+                };
+            } catch (error) {
+                document.getElementById('live-status').textContent = `❌ Camera error: ${error.message}`;
+                document.getElementById('live-status').style.color = '#d32f2f';
+            }
+        }
+
+        // Perform live face detection
+        async function performLiveDetection(video, canvas) {
+            const ctx = canvas.getContext('2d');
+            
+            const detectFrame = async () => {
+                if (!isLiveDetecting) return;
+                
+                try {
+                    // Draw video frame to canvas
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // Get image data
+                    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                    
+                    // Send to server for detection
+                    const response = await fetch('/api/detect-frame', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            frame: imageData
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Draw detection results on canvas
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        // Draw boxes and labels
+                        data.detections.forEach(detection => {
+                            const [x, y, w, h] = detection.box;
+                            
+                            // Draw rectangle
+                            ctx.strokeStyle = detection.name === 'Unknown' ? '#ff6b6b' : '#4CAF50';
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(x, y, w, h);
+                            
+                            // Draw label
+                            const label = `${detection.name} (${detection.confidence}%)`;
+                            ctx.fillStyle = detection.name === 'Unknown' ? '#ff6b6b' : '#4CAF50';
+                            ctx.font = 'bold 16px Arial';
+                            ctx.fillRect(x, y - 30, ctx.measureText(label).width + 10, 30);
+                            ctx.fillStyle = 'white';
+                            ctx.fillText(label, x + 5, y - 10);
+                        });
+                        
+                        // Update results
+                        displayLiveResults(data.detections, data.face_count);
+                    }
+                } catch (error) {
+                    console.error('Detection error:', error);
+                }
+                
+                // Continue detection
+                setTimeout(detectFrame, 200); // 5 FPS
+            };
+            
+            detectFrame();
+        }
+
+        // Display live results
+        function displayLiveResults(detections, count) {
+            const container = document.getElementById('live-results');
+            container.innerHTML = `<p style="font-weight: 600; margin-bottom: 10px;">Detected: ${count} face(s)</p>`;
+            
+            // Track detected names
+            const detectedNames = [];
+            const knownNames = [];
+            let unknownCount = 0;
+            
+            if (detections.length === 0) {
+                container.innerHTML += '<p style="color: #999; text-align: center;">No faces detected</p>';
+                document.getElementById('detected-names-panel').style.display = 'none';
+                return;
+            }
+            
+            detections.forEach((detection, index) => {
+                const div = document.createElement('div');
+                div.className = detection.name === 'Unknown' ? 'result-item unknown' : 'result-item';
+                div.innerHTML = `
+                    <div class="result-name">${index + 1}. ${detection.name}</div>
+                    <div class="result-confidence">Confidence: ${detection.confidence}%</div>
+                `;
+                container.appendChild(div);
+                
+                // Collect detected names
+                if (detection.name !== 'Unknown') {
+                    knownNames.push(detection.name);
+                } else {
+                    unknownCount++;
+                }
+            });
+            
+            // Display detected names panel
+            displayDetectedNames(knownNames, unknownCount, count);
+        }
+
+        // Display detected names prominently
+        function displayDetectedNames(knownNames, unknownCount, totalCount) {
+            const panel = document.getElementById('detected-names-panel');
+            const namesList = document.getElementById('detected-names-list');
+            const countDiv = document.getElementById('detected-count');
+            
+            // Get unique known names
+            const uniqueNames = [...new Set(knownNames)];
+            
+            if (uniqueNames.length === 0 && unknownCount === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+            
+            panel.style.display = 'block';
+            
+            let namesHtml = '';
+            
+            // Display known names with emphasis
+            if (uniqueNames.length > 0) {
+                uniqueNames.forEach(name => {
+                    namesHtml += `
+                        <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; border: 2px solid #fff; font-size: 1.3em;">
+                            ✅ ${name}
+                        </div>
+                    `;
+                });
+            }
+            
+            // Display unknown count
+            if (unknownCount > 0) {
+                namesHtml += `
+                    <div style="background: rgba(255,107,107,0.6); padding: 10px 20px; border-radius: 25px; border: 2px solid #fff; font-size: 1.3em;">
+                        ❓ Unknown (${unknownCount})
+                    </div>
+                `;
+            }
+            
+            namesList.innerHTML = namesHtml;
+            
+            // Update count display
+            let countText = `Total Faces: ${totalCount}`;
+            if (uniqueNames.length > 0) {
+                countText += ` | Known: ${uniqueNames.length}`;
+            }
+            if (unknownCount > 0) {
+                countText += ` | Unknown: ${unknownCount}`;
+            }
+            countDiv.textContent = countText;
+        }
+
+        // Stop live detection
+        function stopLiveDetection() {
+            isLiveDetecting = false;
+            
+            if (liveStream) {
+                liveStream.getTracks().forEach(track => track.stop());
+            }
+            
+            document.getElementById('webcam').style.display = 'none';
+            document.getElementById('canvas-overlay').style.display = 'none';
+            document.getElementById('detected-names-panel').style.display = 'none';
+            document.getElementById('start-live-btn').style.display = 'block';
+            document.getElementById('stop-live-btn').style.display = 'none';
+            document.getElementById('capture-live-btn').style.display = 'none';
+            document.getElementById('live-status').textContent = 'Click "Start Webcam" to begin';
+            document.getElementById('live-status').style.color = '#666';
+            document.getElementById('live-results').innerHTML = '<p style="color: #999; text-align: center;">Detection stopped</p>';
+            cancelCapture();
+        }
+
+        // Initialize
+        getStatus();
+        setInterval(getStatus, 5000);
+    </script>
+</body>
+</html>
